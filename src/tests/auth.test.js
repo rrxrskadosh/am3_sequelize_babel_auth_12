@@ -81,7 +81,7 @@ describe("Autenticacion", () => {
         .send(userLogin);
         expect(results.statusCode).toBeGreaterThanOrEqual(200);
         expect(results.body).toHaveProperty('token');
-        token = results.token;
+        token = results.body.token;
     });
 });
 
