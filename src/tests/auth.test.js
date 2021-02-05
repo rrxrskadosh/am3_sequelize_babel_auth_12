@@ -1,5 +1,6 @@
 import request from "supertest";
 import app from "../index";
+import {Users} from "../models/";
 
 const user = {
     firstName: "Gustavo",
@@ -122,7 +123,6 @@ beforeAll(done => {
 
 afterAll(async (done) => {
     //Borrar todos los datos de la base de datos
-    import {Users} from "../models/";
     await Users.destroy({where: {email: "gus91@gmail.com"}});
     await Users.destroy({where: {email: "gus02@gmail.com"}});
     done();
