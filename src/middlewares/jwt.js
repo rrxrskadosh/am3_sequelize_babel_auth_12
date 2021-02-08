@@ -14,14 +14,21 @@ export const generateJWT = (user) => {
 }
 
 //Validar el token 
-export const validateJWT = (req, res, next) => {
-    // const tokenApproved = req.header('auth_token'); //Agregar header en Insomnia
-    // if (!tokenApproved) return res.status(401).json({ error: 'Acceso denegado' });
-    // try {
-    //     const verified = jwt.verify(tokenApproved, process.env.SECRET_KEY);
-    //     req.user = verified;
-    //     next() // continuamos
-    // } catch (error) {
-    //     res.status(400).json({error: 'Token inválido'})
-    // }
+// verify a token symmetric - synchronous (Cuando es una comunicación donde se necesita una API KEY de ambos lados [Cliente-Servidor])
+export const validateJWT = (req, res) => {
+    const token = req.headers.authorization.split(" ")[1];
+    try {
+        const verified = jwt.verify(token, process.env.SECRET_KEY);
+        return verified;
+    } catch (error) {
+        return null; //Se regresa la contra del verified, en este caso vacío.
+    }
 }
+
+
+
+// const userAction = async () => { const response = await fetch('http://example.com/movies.json', 
+// { method: 'POST', body: myBody, // string or object headers: { 'Content-Type': 'application/json' } }); 
+//     const myJson = await response.json(); 
+//     extract JSON from the http response 
+//     do something with myJson }
