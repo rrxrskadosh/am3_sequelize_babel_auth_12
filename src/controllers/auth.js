@@ -1,6 +1,6 @@
 import { Users } from "../models/";
 import bcryptjs from "bcryptjs";
-import { generateJWT, validateJWT } from "../middlewares/jwt";
+import { generateJWT } from "../middlewares/jwt";
 
 //1. Completar la logica para manejar el inicio de sesión
 // - responder con un codigo de estado 401 cuando las credenciales sean incorrectas
@@ -31,61 +31,28 @@ export const login = async (req, res) => {
 // - responder con un codigo de estado fallido 400 > cuando hagan falta campos o cuando el usuario ya exista en la base de datos
 // - responder con el objeto del usuario que ha sido creado y un codigo 201 cuando el registro sea satisfactorio
 export const signIn = async (req, res) => {
-    let data = req.body;
-    let validatingUserExist = await Users.findOne({where: {email: data.email}});
-    // let validateRegisterFailed (REVISAR)
     try{
+        const {firstName, lastName, email, password} = req.body;
+
+        if(!firstName || !lastName || !email || !password){
+            return res.status(400).json({message: 'El Registro está incompleto, faltan los campos nombre y apellido'})
+        }else {
+            const encryptedPassword = bcryptjs.hashSync(req.body.password, 10); //encripto la contraseña con bcrypt
+            req.body.password = encryptedPassword; //reasignando la contraseña encriptada
+        }
+      
+        let validatingUserExist = await Users.findOne({where: {email: req.body.email}});
+
         if(validatingUserExist){
             res.status(400).json({message: 'El Usuario ya existe en la base de datos'});
         }else{
-            const encryptedPassword = bcryptjs.hashSync(data.password, 10); //encripto la contraseña con bcrypt
-            data.password = encryptedPassword; //reasignando la contraseña encriptada
-            const results = await Users.create(data);
+            const results = await Users.create(req.body);
             res.status(201).json(results);
         }
-        // if(validateRegisterFailed){ (REVISAR)
-        //     return res.status(400).json({message: 'El Registro está incompleto, faltan los campos nombre y apellido'})
-        // }
+        
     }catch(error){
         console.log(error);
     }
 
 }
 
-//Get Users (Obtener todos los usuarios)
-export const getUsers = async (req,res) => {
-        // console.log(req.headers.authorization.split(" ")[1]);
-        const tokenVerify = await validateJWT(req,res);
-        //Si el Token es Valido me devuelve el Payload
-        // console.log(results);
-        try{
-            if(tokenVerify){ //Si tokenVerify es valido pedimos TODOS los Usuarios con findAll y retornamos una respuesta de ESTADO 200 junto con los resultados
-                const results = await Users.findAll();
-                return res.status(200).json({  
-                    results
-                });
-            }else{ //Si es invalido pasamos un estado igual o mayor a 402 y un mensaje de ERROR!
-                return res.status(401).json({message: 'Token inválido'});
-            }
-        }catch{
-            console.log(error);
-        }
-        
-    }
-
-//Get User by ID (Obtener usuario por ID)
-export const getUserById = async (req,res) => {
-        const tokenVerify = await validateJWT(req,res);
-        try {
-            if(tokenVerify){
-                const results = await Users.findOne({where: {id: req.params.id}});
-                return res.status(200).json({  
-                    results
-                });
-            }else{
-                return res.status(401).json({message: 'Token inválido'});
-            }
-        }catch{
-            console.log(error)
-        }
-}
